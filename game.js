@@ -830,17 +830,23 @@ function updateLeaderboard(name, score, maxScore, timeTaken) {
     const leaderboard = getLeaderboard();
     const existingIndex = leaderboard.findIndex(entry => entry.name === name);
     
+    let shouldSave = false;
+    
     if (existingIndex !== -1) {
         if (score > leaderboard[existingIndex].score) {
             leaderboard[existingIndex] = { name, score, maxScore, timeTaken, date: new Date().toLocaleDateString() };
+            shouldSave = true;
         }
     } else {
         leaderboard.push({ name, score, maxScore, timeTaken, date: new Date().toLocaleDateString() });
+        shouldSave = true;
     }
     
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard.splice(10);
-    saveLeaderboard(leaderboard);
+    if (shouldSave) {
+        leaderboard.sort((a, b) => b.score - a.score);
+        leaderboard.splice(10);
+        saveLeaderboard(leaderboard);
+    }
 }
 
 function displayLeaderboard() {
