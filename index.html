@@ -122,7 +122,7 @@
                 <button class="size-btn" data-size="large">Large</button>
             </div>
         </div>
-        <button onclick="document.getElementById('carCustomizeModal').style.display='none'">Close</button>
+        <button onclick="document.getElementById('carCustomizeModal').style.display='none'; if(window.gameInstance) window.gameInstance.resumeGame();">Close</button>
     </div>
     
     <div id="controlsModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; max-width: 500px;">
@@ -150,13 +150,13 @@
                 <p>• Start: Settings Menu</p>
             </div>
         </div>
-        <button onclick="document.getElementById('controlsModal').style.display='none'">Close</button>
+        <button onclick="document.getElementById('controlsModal').style.display='none'; if(window.gameInstance) window.gameInstance.resumeGame();">Close</button>
     </div>
     
     <div id="leaderboardModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; min-width: 300px;">
         <h2>🏆 Leaderboard</h2>
         <div id="leaderboardList" style="margin: 20px 0; max-height: 300px; overflow-y: auto;"></div>
-        <button onclick="document.getElementById('leaderboardModal').style.display='none'">Close</button>
+        <button onclick="document.getElementById('leaderboardModal').style.display='none'; if(window.gameInstance) window.gameInstance.resumeGame();">Close</button>
     </div>
     
     <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
