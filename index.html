@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Racing Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #000; overflow: hidden; }
+        #gameContainer { width: 100vw; height: 100vh; position: relative; }
+        #bottomUI { position: absolute; bottom: 20px; left: 20px; z-index: 100; color: white; font-size: 18px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        #bottomUI div { margin-bottom: 10px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; display: inline-block; margin-right: 20px; }
+        #boostBar { width: 200px; height: 20px; background: #333; border: 2px solid #fff; border-radius: 10px; overflow: hidden; position: relative; }
+        #boostFill { height: 100%; background: linear-gradient(90deg, #ff0000, #ff4500, #ff8c00); width: 0%; transition: width 0.3s; position: absolute; top: 0; left: 0; }
+        canvas { display: block; cursor: grab; }
+        canvas:active { cursor: grabbing; }
+        #settingsBtn { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; z-index: 101; }
+        #settingsMenu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 200; display: none; }
+        #settingsMenu button { background: #444; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        #settingsMenu button:hover { background: #666; }
+        .paused { filter: blur(3px); }
+        #carCustomizeBtn { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 15px; border-radius: 50%; cursor: pointer; font-size: 24px; z-index: 101; }
+        #carCustomizeModal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; }
+        .customize-section { margin-bottom: 15px; }
+        .customize-section label { color: white; display: block; margin-bottom: 5px; font-size: 14px; }
+        .color-options { display: flex; gap: 8px; }
+        .color-btn { width: 30px; height: 30px; border: 2px solid #666; border-radius: 50%; cursor: pointer; transition: border-color 0.2s; }
+        .color-btn:hover { border-color: white; }
+        .color-btn.active { border-color: #00ff00; border-width: 3px; }
+        .size-options { display: flex; gap: 10px; margin-top: 10px; }
+        .size-btn { background: #444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        .size-btn:hover { background: #666; }
+        .size-btn.active { background: #00aa00; }
+        #mainMenu { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
+        #mainMenu h1 { color: #fff; font-size: 48px; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        #mainMenu button { background: #444; color: white; border: none; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; font-size: 18px; }
+        #mainMenu button:hover { background: #666; }
+        #playerNameInput { padding: 10px; font-size: 16px; border: none; border-radius: 5px; margin: 10px; width: 200px; }
+        #leaderboard { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); color: white; padding: 15px; border-radius: 10px; z-index: 100; max-width: 250px; }
+        #leaderboard h3 { margin: 0 0 10px 0; color: #ffff44; }
+        .leaderboard-entry { margin: 5px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div id="mainMenu">
+        <h1>3D Racing Game</h1>
+        <div style="margin: 10px;">
+            <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="15">
+            <select id="playerDropdown" style="padding: 10px; font-size: 16px; border: none; border-radius: 5px; margin-left: 10px; display: none;">
+                <option value="">Select existing player</option>
+            </select>
+        </div>
+        <button id="playBtn">Play Game</button>
+        <button id="mainSettingsBtn">Settings</button>
+        <button id="restartBtn" style="display: none;">New Player</button>
+    </div>
+    
+    <div id="gameContainer" style="display: none;">
+        <button id="settingsBtn">⚙️ Settings</button>
+        <button id="carCustomizeBtn">🚗</button>
+        <div id="bottomUI">
+            <div id="score">Score: 0</div>
+            <div id="level">Level: 1</div>
+            <div id="timer">Time: 60s</div>
+            <div id="speed">Speed: 0 km/h</div>
+            <div>Boost: <div id="boostBar"><div id="boostFill"></div></div></div>
+        </div>
+    </div>
+    
+    <div id="settingsMenu">
+        <h2>Game Settings</h2>
+        <div style="max-height: 400px; overflow-y: auto; margin: 20px 0; text-align: left;">
+            <h3>Game Rules:</h3>
+            <p>• Crash trees to gain points (+1 each)</p>
+            <p>• Avoid rocks (they reduce your score -1)</p>
+            <p>• Complete levels by breaking all trees</p>
+            <p>• Timer increases +4 seconds per level (up to level 5)</p>
+            <p>• Remaining time carries over to next level</p>
+            <p>• Crashing trees gives +1 second boost charge</p>
+            <p>• Use Ctrl to toggle boost (+10 km/h speed)</p>
+            <p>• Use Shift to cycle through gears (1-5, then back to 1)</p>
+            
+            <h3>Xbox Controller Support: ✅</h3>
+            <h3>Game by: Karan Chaurasia</h3>
+        </div>
+        <button id="resumeBtn">Resume Game</button>
+        <button id="respawnBtn">Respawn Car</button>
+        <button id="controlsBtn">🎮 Controls</button>
+        <button id="leaderboardBtn">View Leaderboard</button>
+        <button id="quitBtn">Quit Game</button>
+    </div>
+    
+    <div id="carCustomizeModal">
+        <h2>🚗 Customize Car</h2>
+        <div class="customize-section">
+            <label>Body Color:</label>
+            <div class="color-options">
+                <div class="color-btn active" data-type="body" data-color="0xff4444" style="background: #ff4444;"></div>
+                <div class="color-btn" data-type="body" data-color="0x4444ff" style="background: #4444ff;"></div>
+                <div class="color-btn" data-type="body" data-color="0x44ff44" style="background: #44ff44;"></div>
+                <div class="color-btn" data-type="body" data-color="0xffff44" style="background: #ffff44;"></div>
+                <div class="color-btn" data-type="body" data-color="0xff44ff" style="background: #ff44ff;"></div>
+                <div class="color-btn" data-type="body" data-color="0xffffff" style="background: #ffffff;"></div>
+            </div>
+        </div>
+        <div class="customize-section">
+            <label>Wheel Color:</label>
+            <div class="color-options">
+                <div class="color-btn active" data-type="wheels" data-color="0x222222" style="background: #222222;"></div>
+                <div class="color-btn" data-type="wheels" data-color="0x666666" style="background: #666666;"></div>
+                <div class="color-btn" data-type="wheels" data-color="0x444444" style="background: #444444;"></div>
+                <div class="color-btn" data-type="wheels" data-color="0x8B4513" style="background: #8B4513;"></div>
+                <div class="color-btn" data-type="wheels" data-color="0xFFD700" style="background: #FFD700;"></div>
+                <div class="color-btn" data-type="wheels" data-color="0xC0C0C0" style="background: #C0C0C0;"></div>
+            </div>
+        </div>
+        <div class="customize-section">
+            <label>Car Size:</label>
+            <div class="size-options">
+                <button class="size-btn" data-size="small">Small</button>
+                <button class="size-btn active" data-size="normal">Normal</button>
+                <button class="size-btn" data-size="large">Large</button>
+            </div>
+        </div>
+        <button onclick="document.getElementById('carCustomizeModal').style.display='none'">Close</button>
+    </div>
+    
+    <div id="controlsModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; max-width: 500px;">
+        <h2>🎮 Game Controls</h2>
+        <div style="display: flex; gap: 30px; margin: 20px 0;">
+            <div style="flex: 1;">
+                <h3 style="color: #ffff44;">⌨️ Keyboard</h3>
+                <p>• W/S: Forward/Reverse</p>
+                <p>• A/D: Turn Left/Right</p>
+                <p>• Space: Brake</p>
+                <p>• Ctrl: Toggle Boost</p>
+                <p>• Shift: Cycle Gears</p>
+                <p>• Mouse: Rotate Camera</p>
+                <p>• R: Reset Camera</p>
+                <p>• ESC: Settings Menu</p>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="color: #44ff44;">🎮 Xbox Controller</h3>
+                <p>• Left Stick: Move/Turn</p>
+                <p>• Button A: Brake</p>
+                <p>• Button B: Toggle Boost</p>
+                <p>• D-pad Up/Down: Cycle Gears</p>
+                <p>• Right Stick: Camera</p>
+                <p>• Button Y: Reset Camera</p>
+                <p>• Start: Settings Menu</p>
+            </div>
+        </div>
+        <button onclick="document.getElementById('controlsModal').style.display='none'">Close</button>
+    </div>
+    
+    <div id="leaderboardModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; min-width: 300px;">
+        <h2>🏆 Leaderboard</h2>
+        <div id="leaderboardList" style="margin: 20px 0; max-height: 300px; overflow-y: auto;"></div>
+        <button onclick="document.getElementById('leaderboardModal').style.display='none'">Close</button>
+    </div>
+    
+    <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
