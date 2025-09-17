@@ -556,7 +556,6 @@ class RacingGame {
         this.stopTimer();
         const remainingTime = this.timeLeft;
         this.level++;
-        const baseIncrease = this.level <= 5 ? 4 : 0;
         this.timeLeft = 60 + (Math.min(this.level - 1, 4) * 4) + remainingTime;
         this.track.level = this.level;
         this.track.createNextLevel(this.level);
@@ -572,8 +571,9 @@ class RacingGame {
     }
     
     startTimer() {
+        this.stopTimer(); // Ensure no duplicate timers
         this.timerInterval = setInterval(() => {
-            if (!this.car.frozen) {
+            if (!this.car.frozen && !this.isPaused) {
                 this.timeLeft--;
                 this.updateScoreDisplay();
                 
@@ -623,12 +623,11 @@ class RacingGame {
     
     shouldSaveScore() {
         const leaderboard = getLeaderboard();
-        const playerScores = leaderboard.filter(entry => entry.name === playerName);
+        const existingEntry = leaderboard.find(entry => entry.name === playerName);
         
-        if (playerScores.length === 0) return this.score > 0;
+        if (!existingEntry) return this.score > 0;
         
-        const worstScore = Math.min(...playerScores.map(entry => entry.score));
-        return this.score > worstScore;
+        return this.score > existingEntry.score;
     }
     
     gameOver() {
@@ -829,7 +828,16 @@ function saveLeaderboard(leaderboard) {
 
 function updateLeaderboard(name, score, maxScore, timeTaken) {
     const leaderboard = getLeaderboard();
-    leaderboard.push({ name, score, maxScore, timeTaken, date: new Date().toLocaleDateString() });
+    const existingIndex = leaderboard.findIndex(entry => entry.name === name);
+    
+    if (existingIndex !== -1) {
+        if (score > leaderboard[existingIndex].score) {
+            leaderboard[existingIndex] = { name, score, maxScore, timeTaken, date: new Date().toLocaleDateString() };
+        }
+    } else {
+        leaderboard.push({ name, score, maxScore, timeTaken, date: new Date().toLocaleDateString() });
+    }
+    
     leaderboard.sort((a, b) => b.score - a.score);
     leaderboard.splice(10);
     saveLeaderboard(leaderboard);
@@ -881,6 +889,14 @@ function restartGame() {
 
 function playAgain() {
     document.querySelector('[style*="z-index: 1000"]').remove();
+    if (window.gameInstance) {
+        window.gameInstance.stopTimer();
+    }
+    // Clear the game container
+    const gameContainer = document.getElementById('gameContainer');
+    const canvas = gameContainer.querySelector('canvas');
+    if (canvas) canvas.remove();
+    
     window.gameInstance = new RacingGame();
 }
 
@@ -936,13 +952,17 @@ window.addEventListener('load', () => {
     document.getElementById('leaderboardBtn').addEventListener('click', () => {
         displayLeaderboard();
         document.getElementById('leaderboardModal').style.display = 'block';
+        if (window.gameInstance) window.gameInstance.pauseGame();
     });
     document.getElementById('quitBtn').addEventListener('click', () => {
         if (window.gameInstance) {
             window.gameInstance.quitGame();
         }
     });
-    document.getElementById('controlsBtn').addEventListener('click', () => { controlsModal.style.display = 'block'; });
+    document.getElementById('controlsBtn').addEventListener('click', () => { 
+        controlsModal.style.display = 'block';
+        if (window.gameInstance) window.gameInstance.pauseGame();
+    });
     
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
@@ -952,10 +972,13 @@ window.addEventListener('load', () => {
             
             if (carModal.style.display === 'block') {
                 carModal.style.display = 'none';
+                if (window.gameInstance) window.gameInstance.resumeGame();
             } else if (controlsModal.style.display === 'block') {
                 controlsModal.style.display = 'none';
+                if (window.gameInstance) window.gameInstance.resumeGame();
             } else if (leaderboardModal.style.display === 'block') {
                 leaderboardModal.style.display = 'none';
+                if (window.gameInstance) window.gameInstance.resumeGame();
             } else {
                 toggleSettings();
             }
@@ -964,6 +987,7 @@ window.addEventListener('load', () => {
     
     document.getElementById('carCustomizeBtn').addEventListener('click', () => {
         document.getElementById('carCustomizeModal').style.display = 'block';
+        if (window.gameInstance) window.gameInstance.pauseGame();
     });
     
     document.querySelectorAll('.color-btn').forEach(btn => {
