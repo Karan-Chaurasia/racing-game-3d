@@ -42,15 +42,17 @@
         
         /* Mobile Touch Controls */
         #mobileControls { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 200px; z-index: 150; }
-        .touch-btn { position: absolute; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-size: 24px; font-weight: bold; text-align: center; line-height: 1; user-select: none; touch-action: manipulation; }
+        .touch-btn { position: absolute; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-size: 18px; font-weight: bold; text-align: center; line-height: 1; user-select: none; touch-action: manipulation; }
         .touch-btn:active { background: rgba(255,255,255,0.4); }
-        #forwardBtn { width: 80px; height: 80px; bottom: 120px; right: 80px; line-height: 76px; }
-        #leftBtn { width: 70px; height: 70px; bottom: 60px; right: 160px; line-height: 66px; }
-        #rightBtn { width: 70px; height: 70px; bottom: 60px; right: 20px; line-height: 66px; }
-        #reverseBtn { width: 70px; height: 70px; bottom: 10px; right: 80px; line-height: 66px; }
-        #brakeBtn { width: 60px; height: 60px; bottom: 120px; left: 20px; line-height: 56px; }
-        #boostBtn { width: 60px; height: 60px; bottom: 60px; left: 20px; line-height: 56px; }
-        #gearBtn { width: 60px; height: 60px; bottom: 10px; left: 20px; line-height: 56px; }
+        
+        /* Joystick */
+        #joystickArea { width: 120px; height: 120px; bottom: 40px; left: 40px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; }
+        #joystickKnob { width: 50px; height: 50px; background: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: none; }
+        
+        /* Action buttons */
+        #brakeBtn { width: 60px; height: 60px; bottom: 120px; right: 20px; line-height: 56px; }
+        #boostBtn { width: 60px; height: 60px; bottom: 60px; right: 20px; line-height: 56px; }
+        #gearBtn { width: 60px; height: 60px; bottom: 10px; right: 20px; line-height: 56px; }
         
         /* Landscape orientation prompt */
         #rotatePrompt { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); color: white; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -59,11 +61,11 @@
         
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
-            #bottomUI { bottom: 210px; font-size: 14px; }
-            #bottomUI div { padding: 5px; margin-right: 10px; }
-            #boostBar { width: 120px; height: 15px; }
-            #settingsBtn { top: 10px; right: 10px; padding: 8px 12px; font-size: 14px; }
-            #carCustomizeBtn { bottom: 210px; right: 10px; padding: 12px; font-size: 20px; }
+            #bottomUI { bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; font-size: 12px; }
+            #bottomUI div { padding: 3px 6px; margin: 0; }
+            #boostBar { width: 80px; height: 12px; }
+            #settingsBtn { top: 10px; left: 10px; padding: 8px 12px; font-size: 14px; }
+            #carCustomizeBtn { top: 10px; right: 10px; padding: 8px 12px; font-size: 14px; }
         }
         
         @media (orientation: portrait) and (max-width: 768px) {
@@ -98,10 +100,9 @@
         
         <!-- Mobile Touch Controls -->
         <div id="mobileControls">
-            <div class="touch-btn" id="forwardBtn">▲</div>
-            <div class="touch-btn" id="leftBtn">◄</div>
-            <div class="touch-btn" id="rightBtn">►</div>
-            <div class="touch-btn" id="reverseBtn">▼</div>
+            <div id="joystickArea">
+                <div id="joystickKnob"></div>
+            </div>
             <div class="touch-btn" id="brakeBtn">■</div>
             <div class="touch-btn" id="boostBtn">⚡</div>
             <div class="touch-btn" id="gearBtn">G</div>
@@ -218,17 +219,79 @@
             if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                 document.getElementById('mobileControls').style.display = 'block';
                 
-                const touchBtns = {
-                    forwardBtn: 'w',
-                    leftBtn: 'a',
-                    rightBtn: 'd',
-                    reverseBtn: 's',
+                // Request fullscreen and orientation
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {});
+                }
+                
+                // Joystick controls
+                const joystickArea = document.getElementById('joystickArea');
+                const joystickKnob = document.getElementById('joystickKnob');
+                let isDragging = false;
+                let centerX = 60, centerY = 60;
+                
+                function handleJoystick(e) {
+                    if (!isDragging || !window.gameInstance) return;
+                    
+                    const rect = joystickArea.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const x = touch.clientX - rect.left - centerX;
+                    const y = touch.clientY - rect.top - centerY;
+                    const distance = Math.sqrt(x*x + y*y);
+                    const maxDistance = 35;
+                    
+                    if (distance <= maxDistance) {
+                        joystickKnob.style.transform = `translate(${x - 25}px, ${y - 25}px)`;
+                    } else {
+                        const angle = Math.atan2(y, x);
+                        const limitedX = Math.cos(angle) * maxDistance;
+                        const limitedY = Math.sin(angle) * maxDistance;
+                        joystickKnob.style.transform = `translate(${limitedX - 25}px, ${limitedY - 25}px)`;
+                    }
+                    
+                    const normalizedX = Math.max(-1, Math.min(1, x / maxDistance));
+                    const normalizedY = Math.max(-1, Math.min(1, y / maxDistance));
+                    
+                    window.gameInstance.keys['w'] = normalizedY < -0.3;
+                    window.gameInstance.keys['s'] = normalizedY > 0.3;
+                    window.gameInstance.keys['a'] = normalizedX < -0.3;
+                    window.gameInstance.keys['d'] = normalizedX > 0.3;
+                }
+                
+                joystickArea.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    isDragging = true;
+                    handleJoystick(e);
+                });
+                
+                joystickArea.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    handleJoystick(e);
+                });
+                
+                joystickArea.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    isDragging = false;
+                    joystickKnob.style.transform = 'translate(-50%, -50%)';
+                    if (window.gameInstance) {
+                        window.gameInstance.keys['w'] = false;
+                        window.gameInstance.keys['s'] = false;
+                        window.gameInstance.keys['a'] = false;
+                        window.gameInstance.keys['d'] = false;
+                    }
+                });
+                
+                // Action buttons
+                const actionBtns = {
                     brakeBtn: ' ',
                     boostBtn: 'control',
                     gearBtn: 'shift'
                 };
                 
-                Object.entries(touchBtns).forEach(([btnId, key]) => {
+                Object.entries(actionBtns).forEach(([btnId, key]) => {
                     const btn = document.getElementById(btnId);
                     btn.addEventListener('touchstart', (e) => {
                         e.preventDefault();
