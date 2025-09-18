@@ -41,18 +41,18 @@
         .leaderboard-entry { margin: 5px 0; font-size: 14px; }
         
         /* Mobile Touch Controls */
-        #mobileControls { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 200px; z-index: 150; }
+        #mobileControls { display: none; position: fixed; bottom: 30px; left: 0; right: 0; height: 160px; z-index: 150; }
         .touch-btn { position: absolute; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-size: 18px; font-weight: bold; text-align: center; line-height: 1; user-select: none; touch-action: manipulation; }
         .touch-btn:active { background: rgba(255,255,255,0.4); }
         
         /* Joystick */
-        #joystickArea { width: 120px; height: 120px; bottom: 40px; left: 40px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; }
+        #joystickArea { width: 100px; height: 100px; bottom: 30px; left: 30px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; }
         #joystickKnob { width: 50px; height: 50px; background: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: none; }
         
         /* Action buttons */
-        #brakeBtn { width: 60px; height: 60px; bottom: 140px; right: 20px; line-height: 56px; }
-        #boostBtn { width: 60px; height: 60px; bottom: 80px; right: 20px; line-height: 56px; }
-        #gearBtn { width: 60px; height: 60px; bottom: 20px; right: 20px; line-height: 56px; }
+        #brakeBtn { width: 60px; height: 60px; bottom: 110px; right: 20px; line-height: 56px; }
+        #boostBtn { width: 60px; height: 60px; bottom: 60px; right: 20px; line-height: 56px; }
+        #gearBtn { width: 60px; height: 60px; bottom: 10px; right: 20px; line-height: 56px; }
         
         /* Landscape orientation prompt */
         #rotatePrompt { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); color: white; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -61,12 +61,13 @@
         
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
-            #bottomUI { bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; font-size: 12px; }
-            #bottomUI div { padding: 3px 6px; margin: 0; }
-            #boostBar { width: 80px; height: 12px; }
+            #bottomUI { bottom: 5px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; font-size: 11px; }
+            #bottomUI div { padding: 2px 4px; margin: 0; }
+            #boostBar { width: 60px; height: 10px; }
             #settingsBtn { top: 10px; left: 10px; padding: 8px 12px; font-size: 14px; }
-            #carCustomizeBtn { top: 10px; right: 60px; padding: 8px 12px; font-size: 14px; }
-            #fullscreenBtn { top: 50px; right: 10px; padding: 8px 12px; font-size: 14px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 101; position: absolute; }
+            #carCustomizeBtn { top: 50px; left: 10px; padding: 8px 12px; font-size: 14px; }
+            #fullscreenBtn { top: 10px; right: 10px; padding: 8px 12px; font-size: 14px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 101; position: absolute; }
+            #mobileControls { height: 160px; }
         }
         
         @media (orientation: portrait) and (max-width: 768px) {
@@ -134,6 +135,17 @@
             <p>• Use Shift to cycle through gears (1-5, then back to 1)</p>
             
             <h3>Xbox Controller Support: ✅</h3>
+            
+            <h3>Sensitivity Settings:</h3>
+            <div style="margin: 10px 0;">
+                <label>Touch Sensitivity: <span id="touchSensValue">50</span>%</label>
+                <input type="range" id="touchSensSlider" min="10" max="100" value="50" style="width: 100%; margin: 5px 0;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Controller Sensitivity: <span id="controllerSensValue">50</span>%</label>
+                <input type="range" id="controllerSensSlider" min="10" max="100" value="50" style="width: 100%; margin: 5px 0;">
+            </div>
+            
             <h3>Game by: Karan Chaurasia</h3>
         </div>
         <button id="resumeBtn">Resume Game</button>
@@ -227,27 +239,44 @@
                 // Fullscreen and landscape function
                 function enterFullscreenLandscape() {
                     const element = document.documentElement;
+                    
+                    // Try fullscreen
                     if (element.requestFullscreen) {
-                        element.requestFullscreen().catch(() => {});
+                        element.requestFullscreen().then(() => console.log('Fullscreen activated')).catch(e => console.log('Fullscreen failed:', e));
                     } else if (element.webkitRequestFullscreen) {
-                        element.webkitRequestFullscreen().catch(() => {});
+                        element.webkitRequestFullscreen();
+                    } else if (element.mozRequestFullScreen) {
+                        element.mozRequestFullScreen();
                     } else if (element.msRequestFullscreen) {
-                        element.msRequestFullscreen().catch(() => {});
+                        element.msRequestFullscreen();
                     }
                     
-                    if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock('landscape').catch(() => {});
-                    } else if (screen.lockOrientation) {
-                        screen.lockOrientation('landscape');
-                    } else if (screen.mozLockOrientation) {
-                        screen.mozLockOrientation('landscape');
-                    } else if (screen.msLockOrientation) {
-                        screen.msLockOrientation('landscape');
-                    }
+                    // Try orientation lock
+                    setTimeout(() => {
+                        if (screen.orientation && screen.orientation.lock) {
+                            screen.orientation.lock('landscape').catch(() => {});
+                        } else if (screen.lockOrientation) {
+                            screen.lockOrientation('landscape');
+                        } else if (screen.mozLockOrientation) {
+                            screen.mozLockOrientation('landscape');
+                        } else if (screen.msLockOrientation) {
+                            screen.msLockOrientation('landscape');
+                        }
+                    }, 100);
                 }
                 
-                // Manual fullscreen button
-                document.getElementById('fullscreenBtn').addEventListener('click', enterFullscreenLandscape);
+                // Manual fullscreen button with better event handling
+                const fullscreenBtn = document.getElementById('fullscreenBtn');
+                
+                function handleFullscreen(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Fullscreen button clicked');
+                    enterFullscreenLandscape();
+                }
+                
+                fullscreenBtn.addEventListener('click', handleFullscreen);
+                fullscreenBtn.addEventListener('touchend', handleFullscreen);
                 
                 // Try auto-fullscreen on game start
                 document.addEventListener('touchstart', enterFullscreenLandscape, { once: true });
@@ -256,7 +285,7 @@
                 const joystickArea = document.getElementById('joystickArea');
                 const joystickKnob = document.getElementById('joystickKnob');
                 let isDragging = false;
-                let centerX = 60, centerY = 60;
+                let centerX = 50, centerY = 50;
                 
                 function handleJoystick(e) {
                     if (!isDragging || !window.gameInstance) return;
@@ -280,10 +309,16 @@
                     const normalizedX = Math.max(-1, Math.min(1, x / maxDistance));
                     const normalizedY = Math.max(-1, Math.min(1, y / maxDistance));
                     
-                    window.gameInstance.keys['w'] = normalizedY < -0.3;
-                    window.gameInstance.keys['s'] = normalizedY > 0.3;
-                    window.gameInstance.keys['a'] = normalizedX < -0.3;
-                    window.gameInstance.keys['d'] = normalizedX > 0.3;
+                    // Dynamic touch sensitivity
+                    window.gameInstance.keys['w'] = normalizedY < -touchSensitivity;
+                    window.gameInstance.keys['s'] = normalizedY > touchSensitivity;
+                    window.gameInstance.keys['a'] = normalizedX < -touchSensitivity;
+                    window.gameInstance.keys['d'] = normalizedX > touchSensitivity;
+                    
+                    // Haptic feedback
+                    if (navigator.vibrate && (Math.abs(normalizedX) > 0.8 || Math.abs(normalizedY) > 0.8)) {
+                        navigator.vibrate(10);
+                    }
                 }
                 
                 joystickArea.addEventListener('touchstart', (e) => {
@@ -321,6 +356,8 @@
                     btn.addEventListener('touchstart', (e) => {
                         e.preventDefault();
                         if (window.gameInstance) window.gameInstance.keys[key] = true;
+                        // Haptic feedback for button press
+                        if (navigator.vibrate) navigator.vibrate(20);
                     });
                     btn.addEventListener('touchend', (e) => {
                         e.preventDefault();
@@ -330,6 +367,32 @@
             }
         }
         
-        window.addEventListener('load', setupMobileControls);
+        // Sensitivity settings
+        let touchSensitivity = 0.2;
+        let controllerSensitivity = 0.2;
+        
+        function setupSensitivityControls() {
+            const touchSlider = document.getElementById('touchSensSlider');
+            const controllerSlider = document.getElementById('controllerSensSlider');
+            const touchValue = document.getElementById('touchSensValue');
+            const controllerValue = document.getElementById('controllerSensValue');
+            
+            touchSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                touchSensitivity = 0.1 + (value / 100) * 0.3; // Range: 0.1 to 0.4
+                touchValue.textContent = value;
+            });
+            
+            controllerSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                controllerSensitivity = 0.1 + (value / 100) * 0.3; // Range: 0.1 to 0.4
+                controllerValue.textContent = value;
+            });
+        }
+        
+        window.addEventListener('load', () => {
+            setupMobileControls();
+            setupSensitivityControls();
+        });
     </script>
     <script src="game.js"></script>
