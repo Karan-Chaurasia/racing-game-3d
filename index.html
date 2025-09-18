@@ -65,7 +65,8 @@
             #bottomUI div { padding: 3px 6px; margin: 0; }
             #boostBar { width: 80px; height: 12px; }
             #settingsBtn { top: 10px; left: 10px; padding: 8px 12px; font-size: 14px; }
-            #carCustomizeBtn { top: 10px; right: 10px; padding: 8px 12px; font-size: 14px; }
+            #carCustomizeBtn { top: 10px; right: 60px; padding: 8px 12px; font-size: 14px; }
+            #fullscreenBtn { top: 50px; right: 10px; padding: 8px 12px; font-size: 14px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 101; position: absolute; }
         }
         
         @media (orientation: portrait) and (max-width: 768px) {
@@ -107,6 +108,9 @@
             <div class="touch-btn" id="boostBtn">⚡</div>
             <div class="touch-btn" id="gearBtn">G</div>
         </div>
+        
+        <!-- Mobile Fullscreen Button -->
+        <button id="fullscreenBtn" style="display: none;">📱</button>
     </div>
     
     <!-- Rotate Device Prompt -->
@@ -218,10 +222,10 @@
         function setupMobileControls() {
             if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                 document.getElementById('mobileControls').style.display = 'block';
+                document.getElementById('fullscreenBtn').style.display = 'block';
                 
-                // Auto fullscreen and landscape rotation
+                // Fullscreen and landscape function
                 function enterFullscreenLandscape() {
-                    // Request fullscreen
                     const element = document.documentElement;
                     if (element.requestFullscreen) {
                         element.requestFullscreen().catch(() => {});
@@ -231,7 +235,6 @@
                         element.msRequestFullscreen().catch(() => {});
                     }
                     
-                    // Force landscape orientation
                     if (screen.orientation && screen.orientation.lock) {
                         screen.orientation.lock('landscape').catch(() => {});
                     } else if (screen.lockOrientation) {
@@ -243,12 +246,11 @@
                     }
                 }
                 
-                // Auto-trigger on first user interaction
-                document.addEventListener('touchstart', enterFullscreenLandscape, { once: true });
-                document.addEventListener('click', enterFullscreenLandscape, { once: true });
+                // Manual fullscreen button
+                document.getElementById('fullscreenBtn').addEventListener('click', enterFullscreenLandscape);
                 
-                // Also trigger immediately if possible
-                setTimeout(enterFullscreenLandscape, 100);
+                // Try auto-fullscreen on game start
+                document.addEventListener('touchstart', enterFullscreenLandscape, { once: true });
                 
                 // Joystick controls
                 const joystickArea = document.getElementById('joystickArea');
