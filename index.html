@@ -41,18 +41,18 @@
         .leaderboard-entry { margin: 5px 0; font-size: 14px; }
         
         /* Mobile Touch Controls */
-        #mobileControls { display: none; position: fixed; bottom: 40px; left: 0; right: 0; height: 140px; z-index: 150; }
-        .touch-btn { position: absolute; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-size: 18px; font-weight: bold; text-align: center; line-height: 1; user-select: none; touch-action: manipulation; }
+        #mobileControls { display: none; position: fixed; bottom: 20px; left: 0; right: 0; height: 100px; z-index: 150; }
+        .touch-btn { position: absolute; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-size: 16px; font-weight: bold; text-align: center; line-height: 1; user-select: none; touch-action: manipulation; }
         .touch-btn:active { background: rgba(255,255,255,0.4); }
         
         /* Joystick */
-        #joystickArea { width: 90px; height: 90px; bottom: 25px; left: 25px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; }
-        #joystickKnob { width: 50px; height: 50px; background: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: none; }
+        #joystickArea { width: 80px; height: 80px; bottom: 10px; left: 20px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; }
+        #joystickKnob { width: 40px; height: 40px; background: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: none; }
         
         /* Action buttons */
-        #brakeBtn { width: 60px; height: 60px; bottom: 90px; right: 20px; line-height: 56px; }
-        #boostBtn { width: 60px; height: 60px; bottom: 50px; right: 20px; line-height: 56px; }
-        #gearBtn { width: 60px; height: 60px; bottom: 10px; right: 20px; line-height: 56px; }
+        #brakeBtn { width: 50px; height: 50px; bottom: 45px; right: 20px; line-height: 46px; }
+        #boostBtn { width: 50px; height: 50px; bottom: 45px; right: 80px; line-height: 46px; }
+        #gearBtn { width: 50px; height: 50px; bottom: 10px; right: 50px; line-height: 46px; }
         
         /* Landscape orientation prompt */
         #rotatePrompt { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); color: white; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -65,9 +65,10 @@
             #bottomUI div { padding: 1px 3px; margin: 0; }
             #boostBar { width: 50px; height: 8px; }
             #settingsBtn { top: 10px; left: 10px; padding: 8px 12px; font-size: 14px; }
-            #carCustomizeBtn { bottom: 160px; right: 10px; padding: 8px 12px; font-size: 14px; border-radius: 5px; }
+            #carCustomizeBtn { bottom: 120px; right: 10px; padding: 8px 12px; font-size: 14px; border-radius: 5px; }
             #fullscreenBtn { top: 10px; right: 10px; padding: 8px 12px; font-size: 14px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 101; position: absolute; }
-            #mobileControls { height: 140px; }
+            #mobileControls { height: 100px; }
+            #settingsMenu, #carCustomizeModal, #controlsModal, #leaderboardModal { max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         }
         
         @media (orientation: portrait) and (max-width: 768px) {
@@ -190,7 +191,7 @@
         <button onclick="document.getElementById('carCustomizeModal').style.display='none'; if(window.gameInstance) window.gameInstance.resumeGame();">Close</button>
     </div>
     
-    <div id="controlsModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; max-width: 500px;">
+    <div id="controlsModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 20px; border-radius: 10px; z-index: 300; display: none; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
         <h2>🎮 Game Controls</h2>
         <div style="display: flex; gap: 30px; margin: 20px 0;">
             <div style="flex: 1;">
@@ -218,7 +219,7 @@
         <button onclick="document.getElementById('controlsModal').style.display='none'; if(window.gameInstance) window.gameInstance.resumeGame();">Close</button>
     </div>
     
-    <div id="leaderboardModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 30px; border-radius: 10px; z-index: 300; display: none; min-width: 300px;">
+    <div id="leaderboardModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); color: white; padding: 20px; border-radius: 10px; z-index: 300; display: none; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
         <h2>🏆 Leaderboard</h2>
         <div id="leaderboardList" style="margin: 20px 0; max-height: 300px; overflow-y: auto;"></div>
         <button onclick="document.getElementById('leaderboardModal').style.display='none'; if(window.gameInstance) window.gameInstance.resumeGame();">Close</button>
@@ -236,33 +237,18 @@
                 document.getElementById('mobileControls').style.display = 'block';
                 document.getElementById('fullscreenBtn').style.display = 'block';
                 
-                // Fullscreen and landscape function
-                function enterFullscreenLandscape() {
-                    const element = document.documentElement;
-                    
-                    // Try fullscreen
-                    if (element.requestFullscreen) {
-                        element.requestFullscreen().then(() => console.log('Fullscreen activated')).catch(e => console.log('Fullscreen failed:', e));
-                    } else if (element.webkitRequestFullscreen) {
-                        element.webkitRequestFullscreen();
-                    } else if (element.mozRequestFullScreen) {
-                        element.mozRequestFullScreen();
-                    } else if (element.msRequestFullscreen) {
-                        element.msRequestFullscreen();
+                // Fullscreen function
+                function openFullscreen() {
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
                     }
-                    
-                    // Try orientation lock
-                    setTimeout(() => {
-                        if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('landscape').catch(() => {});
-                        } else if (screen.lockOrientation) {
-                            screen.lockOrientation('landscape');
-                        } else if (screen.mozLockOrientation) {
-                            screen.mozLockOrientation('landscape');
-                        } else if (screen.msLockOrientation) {
-                            screen.msLockOrientation('landscape');
-                        }
-                    }, 100);
                 }
                 
                 // Manual fullscreen button with better event handling
@@ -271,21 +257,20 @@
                 function handleFullscreen(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Fullscreen button clicked');
-                    enterFullscreenLandscape();
+                    openFullscreen();
                 }
                 
                 fullscreenBtn.addEventListener('click', handleFullscreen);
                 fullscreenBtn.addEventListener('touchend', handleFullscreen);
                 
                 // Try auto-fullscreen on game start
-                document.addEventListener('touchstart', enterFullscreenLandscape, { once: true });
+                document.addEventListener('touchstart', openFullscreen, { once: true });
                 
                 // Joystick controls
                 const joystickArea = document.getElementById('joystickArea');
                 const joystickKnob = document.getElementById('joystickKnob');
                 let isDragging = false;
-                let centerX = 45, centerY = 45;
+                let centerX = 40, centerY = 40;
                 
                 function handleJoystick(e) {
                     if (!isDragging || !window.gameInstance) return;
@@ -295,7 +280,7 @@
                     const x = touch.clientX - rect.left - centerX;
                     const y = touch.clientY - rect.top - centerY;
                     const distance = Math.sqrt(x*x + y*y);
-                    const maxDistance = 35;
+                    const maxDistance = 30;
                     
                     if (distance <= maxDistance) {
                         joystickKnob.style.transform = `translate(${x - 25}px, ${y - 25}px)`;
