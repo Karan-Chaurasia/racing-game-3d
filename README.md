@@ -4,7 +4,7 @@ A complete 3D racing game built with Three.js featuring car physics, Xbox contro
 
 ## 🎮 Play Now
 
-**[Play the Game](https://your-username.github.io/racing-game-3d/)**
+**[Play the Game](https://lnkd.in/daw_rSst)**
 
 ## ✨ Features
 
