@@ -667,10 +667,13 @@ class RacingGame {
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.9);
             color: white;
-            padding: 40px;
+            padding: 20px;
             border-radius: 10px;
             text-align: center;
             z-index: 1000;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
         `;
         document.body.appendChild(gameOverDiv);
     }
