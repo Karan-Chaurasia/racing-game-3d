@@ -8,7 +8,9 @@ class Car {
         this.speed = 0;
         this.maxSpeed = 1.2;
         this.acceleration = 0.03;
-        this.deceleration = 0.02;
+        this.steeringAngle = 0;
+        this.maxSteering = Math.PI/6;
+        this.deceleration = 0.04;
         this.turnSpeed = 0.04;
         this.friction = 0.95;
         this.currentGear = 1;
@@ -48,11 +50,17 @@ class Car {
             { x: -1.2, y: -0.3, z: -1.3 }, { x: 1.2, y: -0.3, z: -1.3 }
         ];
         
-        wheelPositions.forEach(pos => {
+        this.frontWheels = [];
+        this.backWheels = [];
+
+        wheelPositions.forEach((pos, i) => {
             const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
             wheel.position.set(pos.x, pos.y, pos.z);
             wheel.rotation.z = Math.PI / 2;
             wheels.push(wheel);
+
+            if (i < 2) this.frontWheels.push(wheel); // first 2 are front
+            else this.backWheels.push(wheel);        // last 2 are back
         });
         
         const headlightGeometry = new THREE.SphereGeometry(0.15, 8, 8);
@@ -154,11 +162,34 @@ class Car {
         }
         
         if (keys['a'] || keys['ArrowLeft']) {
-            this.rotation += this.turnSpeed;
+            if (this.speed >= 0) {
+                this.rotation += this.turnSpeed;   // forward left
+            } else {
+                this.rotation -= this.turnSpeed;   // reverse left
+            }
+            this.steeringAngle = Math.min(this.steeringAngle + 0.02, this.maxSteering);
         }
-        if (keys['d'] || keys['ArrowRight']) {
-            this.rotation -= this.turnSpeed;
+        else if (keys['d'] || keys['ArrowRight']) {
+            if (this.speed >= 0) {
+                this.rotation -= this.turnSpeed;   // forward right
+            } else {
+                this.rotation += this.turnSpeed;   // reverse right
+            }
+            this.steeringAngle = Math.max(this.steeringAngle - 0.02, -this.maxSteering);
         }
+        else {
+            // Auto-center steering when no input
+            if (this.steeringAngle > 0) {
+                this.steeringAngle = Math.max(0, this.steeringAngle - 0.02);
+            }
+            if (this.steeringAngle < 0) {
+                this.steeringAngle = Math.min(0, this.steeringAngle + 0.02);
+            }
+        }
+
+        this.frontWheels.forEach(wheel => {
+            wheel.rotation.y = this.steeringAngle;
+        });
         
         const actualSpeed = this.isBoosting ? this.speed + this.boostSpeed : this.speed;
         this.velocity.x = Math.sin(this.rotation) * actualSpeed;
@@ -263,7 +294,7 @@ class Track {
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -0.1;
         this.scene.add(ground);
-        
+
         const skyGeometry = new THREE.SphereGeometry(150, 32, 32);
         const skyMaterial = new THREE.MeshBasicMaterial({ color: 0x87CEEB, side: THREE.BackSide });
         const sky = new THREE.Mesh(skyGeometry, skyMaterial);
