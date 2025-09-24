@@ -389,12 +389,9 @@
             updateControllerSensitivity(25);
         }
         
-        window.addEventListener("orientationchange", () => {
-            if (window.innerHeight > window.innerWidth) {
-                document.getElementById("rotatePrompt").style.display = "flex";
-            } else {
-                document.getElementById("rotatePrompt").style.display = "none";
-            }
+        window.addEventListener('load', () => {
+            setupMobileControls();
+            setupSensitivityControls();
         });
     </script>
     <script src="game.js"></script>
