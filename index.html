@@ -355,8 +355,8 @@
         }
         
         // Sensitivity settings
-        let touchSensitivity = 0.2;
-        let controllerSensitivity = 0.2;
+        let touchSensitivity = 0.15;
+        let controllerSensitivity = 0.15;
         
         function setupSensitivityControls() {
             const touchSlider = document.getElementById('touchSensSlider');
@@ -366,13 +366,13 @@
             
             function updateTouchSensitivity(value) {
                 const multiplier = value / 100; // 0.5x to 2.0x
-                touchSensitivity = 0.2 * multiplier;
+                touchSensitivity = 0.15 * multiplier;
                 touchValue.textContent = multiplier.toFixed(1) + 'x';
             }
             
             function updateControllerSensitivity(value) {
                 const multiplier = value / 100; // 0.5x to 2.0x
-                controllerSensitivity = 0.2 * multiplier;
+                controllerSensitivity = 0.15 * multiplier;
                 controllerValue.textContent = multiplier.toFixed(1) + 'x';
             }
             
