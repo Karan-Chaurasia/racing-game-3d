@@ -304,9 +304,6 @@ class Track {
     }
     
     createScatteredObjects() {
-        const isMobile = /Mobi/Android/i.test(navigator.userAgent);
-        const treeCount = isMobile ? 50 : 150;
-        const rockCount = isMobile ? 10:30;
         this.trees = [];
         this.rocks = [];
         const occupiedPositions = [];
